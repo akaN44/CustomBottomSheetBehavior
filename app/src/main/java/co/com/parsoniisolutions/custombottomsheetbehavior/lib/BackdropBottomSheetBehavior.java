@@ -80,12 +80,17 @@ public class BackdropBottomSheetBehavior<V extends View> extends CoordinatorLayo
             init(child, dependency);
             return false;
         }
-        if((mCurrentChildY = (int) ((dependency.getY()-mAnchorPointY) * mCollapsedY / (mCollapsedY-mAnchorPointY))) <= 0)
-            //The child reached the top
-            child.setY(mCurrentChildY = 0);
-        else
-            child.setY(mCurrentChildY);
+        if(isChildReachedTop(dependency)) child.setY(mCurrentChildY = 0);
+        else child.setY(mCurrentChildY);
         return true;
+    }
+
+    private boolean isChildReachedTop(View dependency){
+        return (mCurrentChildY = calculatePotentialCurrentChildYDependingOnDependencyY(dependency.getY())) <= 0;
+    }
+
+    private int calculatePotentialCurrentChildYDependingOnDependencyY(float dependencyY){
+        return (int) ((dependencyY-mAnchorPointY) * mCollapsedY / (mCollapsedY-mAnchorPointY));
     }
 
     /**
@@ -107,9 +112,9 @@ public class BackdropBottomSheetBehavior<V extends View> extends CoordinatorLayo
         //The current child Y at init is equal to the dependency Y.
         mCurrentChildY = (int) dependency.getY();
 
-        //If the current child Y value is equal to the anchor point Y or really close
-        // mean that the screen has been rotated while the bottom sheet was at anchor point
-        // so the child should be at the top position instead to be at the start position
+        // If the current child Y value is equal to the Collapsed Y plus the Peek Height value,
+        // it's mean that the dependency is hidden
+        // otherwise it's a screen rotation and the dependency was at anchor point or expanded before the rotation
         if(mCurrentChildY == mCollapsedY + mPeekHeight)
             child.setY(mCurrentChildY);
         else child.setY(0);
