@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.v4.widget.NestedScrollView;
+import android.support.v4.view.NestedScrollingChild;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -72,7 +72,7 @@ public class BackdropBottomSheetBehavior<V extends View> extends CoordinatorLayo
 
     @Override
     public boolean layoutDependsOn(CoordinatorLayout parent, View child, View dependency) {
-        return dependency instanceof NestedScrollView;
+        return dependency instanceof NestedScrollingChild;
     }
 
     @Override
@@ -94,7 +94,7 @@ public class BackdropBottomSheetBehavior<V extends View> extends CoordinatorLayo
         return (mCurrentChildY = (int) ((dependencyY-mAnchorPointY) * mCollapsedY / (mCollapsedY-mAnchorPointY)))
                 <= 0 ? 0 : mCurrentChildY;
     }
-    
+
     /**
      * Init the behavior
      * @param child the view attached to this behavior
