@@ -28,6 +28,8 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
+
 import co.com.parsoniisolutions.custombottomsheetbehavior.R;
 
 /**
@@ -48,9 +50,10 @@ public class MergedAppBarLayoutBehavior extends AppBarLayout.ScrollingViewBehavi
 
     private String mToolbarTitle;
 
-    private Toolbar mToolbar;
-    private TextView mTitleTextView;
-    private View mBackground;
+    private WeakReference<Toolbar> mToolbarRef;
+    private WeakReference<TextView> mTitleTextViewRef;
+    private WeakReference<View> mBackgroundRef;
+
     private View.OnClickListener mOnNavigationClickListener;
 
     private ValueAnimator mTitleAlphaValueAnimator;
@@ -132,14 +135,15 @@ public class MergedAppBarLayoutBehavior extends AppBarLayout.ScrollingViewBehavi
             appBarLayout.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
         }
 
-        mToolbar = (Toolbar) appBarLayout.findViewById(R.id.expanded_toolbar);
-        mBackground = appBarLayout.findViewById(R.id.background);
-        mBackGroundLayoutParams = (FrameLayout.LayoutParams) mBackground.getLayoutParams();
+        mToolbarRef = new WeakReference<>((Toolbar) appBarLayout.findViewById(R.id.expanded_toolbar));
+        mBackgroundRef = new WeakReference<>(appBarLayout.findViewById(R.id.background));
+        mBackGroundLayoutParams = (FrameLayout.LayoutParams) mBackgroundRef.get().getLayoutParams();
 
-        mTitleTextView = findTitleTextView(mToolbar);
-        if (mTitleTextView == null)
+        TextView titleTextView = findTitleTextView(mToolbarRef.get());
+        if (titleTextView == null)
             return;
 
+        mTitleTextViewRef = new WeakReference<>(titleTextView);
         mInitialY = child.getY();
 
         child.setVisibility(mVisible ? View.VISIBLE : View.INVISIBLE);
@@ -147,8 +151,8 @@ public class MergedAppBarLayoutBehavior extends AppBarLayout.ScrollingViewBehavi
 
         setFullBackGroundColor(mVisible && mCurrentTitleAlpha == 1 ? R.color.colorPrimary: android.R.color.transparent);
         setPartialBackGroundHeight(0);
-        mTitleTextView.setText(mToolbarTitle);
-        mTitleTextView.setAlpha(mCurrentTitleAlpha);
+        mTitleTextViewRef.get().setText(mToolbarTitle);
+        mTitleTextViewRef.get().setAlpha(mCurrentTitleAlpha);
         mInit = true;
     }
 
@@ -174,11 +178,11 @@ public class MergedAppBarLayoutBehavior extends AppBarLayout.ScrollingViewBehavi
 
     private void setPartialBackGroundHeight(int height){
         mBackGroundLayoutParams.height = height;
-        mBackground.setLayoutParams(mBackGroundLayoutParams);
+        mBackgroundRef.get().setLayoutParams(mBackGroundLayoutParams);
     }
 
     private void setFullBackGroundColor(@ColorRes int colorRes){
-        mToolbar.setBackgroundColor(ContextCompat.getColor(mContext,colorRes));
+        mToolbarRef.get().setBackgroundColor(ContextCompat.getColor(mContext,colorRes));
     }
 
     private TextView findTitleTextView(Toolbar toolbar){
@@ -208,8 +212,8 @@ public class MergedAppBarLayoutBehavior extends AppBarLayout.ScrollingViewBehavi
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     super.onAnimationEnd(animation);
-                    ((AppCompatActivity)mContext).setSupportActionBar(mToolbar);
-                    mToolbar.setNavigationOnClickListener(mOnNavigationClickListener);
+                    ((AppCompatActivity)mContext).setSupportActionBar(mToolbarRef.get());
+                    mToolbarRef.get().setNavigationOnClickListener(mOnNavigationClickListener);
                     ActionBar actionBar = ((AppCompatActivity)mContext).getSupportActionBar();
                     if (actionBar != null) {
                         actionBar.setDisplayHomeAsUpEnabled(true);
@@ -239,17 +243,17 @@ public class MergedAppBarLayoutBehavior extends AppBarLayout.ScrollingViewBehavi
     }
 
     private boolean isTitleVisible(){
-        return mTitleTextView.getAlpha() == 1;
+        return mTitleTextViewRef.get().getAlpha() == 1;
     }
 
     private void setTitleVisible(boolean visible){
 
-        if((visible && mTitleTextView.getAlpha() == 1)||
-          (!visible && mTitleTextView.getAlpha() == 0))
+        if((visible && mTitleTextViewRef.get().getAlpha() == 1)||
+          (!visible && mTitleTextViewRef.get().getAlpha() == 0))
             return;
 
         if(mTitleAlphaValueAnimator == null || !mTitleAlphaValueAnimator.isRunning()){
-            mToolbar.setTitle(mToolbarTitle);
+            mToolbarRef.get().setTitle(mToolbarTitle);
             int startAlpha = visible ? 0 : 1;
             int endAlpha = mCurrentTitleAlpha = visible ? 1 : 0;
 
@@ -258,7 +262,7 @@ public class MergedAppBarLayoutBehavior extends AppBarLayout.ScrollingViewBehavi
             mTitleAlphaValueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
-                    mTitleTextView.setAlpha((Float) animation.getAnimatedValue());
+                    mTitleTextViewRef.get().setAlpha((Float) animation.getAnimatedValue());
                 }
             });
             mTitleAlphaValueAnimator.start();
@@ -295,8 +299,8 @@ public class MergedAppBarLayoutBehavior extends AppBarLayout.ScrollingViewBehavi
 
     public void setToolbarTitle(String title) {
         this.mToolbarTitle = title;
-        if(this.mToolbar!=null)
-            this.mToolbar.setTitle(title);
+        if(this.mToolbarRef!=null)
+            this.mToolbarRef.get().setTitle(title);
     }
 
     public void setAnchorPoint(float anchorPoint) {
