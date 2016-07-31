@@ -12,8 +12,8 @@ import android.view.View;
 import co.com.parsoniisolutions.custombottomsheetbehavior.R;
 
 /**
- * This behavior depends on a NestedScrollView.
- * It will move the view on which its attached proportionally to the dependency (NestedScrollView)
+ * This behavior depends on a NestedScrollingChild.
+ * It will move the view on which its attached proportionally to the dependency (NestedScrollingChild)
  * creating a parallax effect between the two views.
  *
  *  -------------------> Top Screen
@@ -27,7 +27,7 @@ import co.com.parsoniisolutions.custombottomsheetbehavior.R;
  *  _               _
  *  | Dependency    |
  *  | Scroll Range  |
- *  | behavior      |
+ *  | this behavior |
  *  | react to      |
  *  | (moving child)|
  *  -------------------> Collapsed Y (Start Child Y)
@@ -104,7 +104,7 @@ public class BackdropBottomSheetBehavior<V extends View> extends CoordinatorLayo
 
         // The dependency Y value is equal to the height of the dependency (BottomSheet) which is the size of the screen
         // less two time the size of the peek height of the dependency (BottomSheet) corresponding to
-        // the bottom sheet visible part in collapsed mode plus the toolbar and status bar after Lollipop
+        // the bottom sheet visible part in collapsed mode plus the toolbar (and status bar after Lollipop)
         // Both should be equal
         mCollapsedY = dependency.getHeight() - (2 * mPeekHeight);
 
@@ -114,13 +114,11 @@ public class BackdropBottomSheetBehavior<V extends View> extends CoordinatorLayo
         if(mCollapsedY < mAnchorPointY)
             Log.w(TAG,"The Anchor Point is to high regarding the side of the screen");
 
-        //The current child Y at init is equal to the dependency Y.
-        mCurrentChildY = (int) dependency.getY();
-
         // If the current child Y value is equal to the Collapsed Y plus the Peek Height value,
         // it's mean that the dependency is hidden
         // otherwise it's a screen rotation and the dependency was at anchor point or expanded before the rotation
-        child.setY(mCurrentChildY == mCollapsedY + mPeekHeight ? mCurrentChildY : 0);
+        child.setY((mCurrentChildY = (int) dependency.getY()) == mCollapsedY + mPeekHeight ?
+                    mCurrentChildY : (mCurrentChildY = 0));
         mInit = true;
     }
 
