@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.widget.NestedScrollView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import co.com.parsoniisolutions.custombottomsheetbehavior.R;
@@ -80,19 +81,20 @@ public class BackdropBottomSheetBehavior<V extends View> extends CoordinatorLayo
             init(child, dependency);
             return false;
         }
-        if(isChildReachedTop(dependency)) child.setY(mCurrentChildY = 0);
-        else child.setY(mCurrentChildY);
+        child.setY(getCurrentChildY(dependency.getY()));
         return true;
     }
 
-    private boolean isChildReachedTop(View dependency){
-        return (mCurrentChildY = calculatePotentialCurrentChildYDependingOnDependencyY(dependency.getY())) <= 0;
+    /**
+     * Get the current child Y depending on the dependency Y
+     * @param dependencyY the dependency to react on
+     * @return the current child Y or 0 if the child already reached the top
+     */
+    private int getCurrentChildY(float dependencyY){
+        return (mCurrentChildY = (int) ((dependencyY-mAnchorPointY) * mCollapsedY / (mCollapsedY-mAnchorPointY)))
+                <= 0 ? 0 : mCurrentChildY;
     }
-
-    private int calculatePotentialCurrentChildYDependingOnDependencyY(float dependencyY){
-        return (int) ((dependencyY-mAnchorPointY) * mCollapsedY / (mCollapsedY-mAnchorPointY));
-    }
-
+    
     /**
      * Init the behavior
      * @param child the view attached to this behavior
@@ -109,15 +111,16 @@ public class BackdropBottomSheetBehavior<V extends View> extends CoordinatorLayo
         //The Anchor point Y value is corresponding to the child (ImageView or Viewpager) Height
         mAnchorPointY = child.getHeight();
 
+        if(mCollapsedY < mAnchorPointY)
+            Log.w(TAG,"The Anchor Point is to high regarding the side of the screen");
+
         //The current child Y at init is equal to the dependency Y.
         mCurrentChildY = (int) dependency.getY();
 
         // If the current child Y value is equal to the Collapsed Y plus the Peek Height value,
         // it's mean that the dependency is hidden
         // otherwise it's a screen rotation and the dependency was at anchor point or expanded before the rotation
-        if(mCurrentChildY == mCollapsedY + mPeekHeight)
-            child.setY(mCurrentChildY);
-        else child.setY(0);
+        child.setY(mCurrentChildY == mCollapsedY + mPeekHeight ? mCurrentChildY : 0);
         mInit = true;
     }
 
