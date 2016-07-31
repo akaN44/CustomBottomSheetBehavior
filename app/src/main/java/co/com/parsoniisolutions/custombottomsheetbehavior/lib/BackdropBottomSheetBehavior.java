@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.widget.NestedScrollView;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 import co.com.parsoniisolutions.custombottomsheetbehavior.R;
@@ -107,11 +106,6 @@ public class BackdropBottomSheetBehavior<V extends View> extends CoordinatorLayo
 
         //The current child Y at init is equal to the dependency Y.
         mCurrentChildY = (int) dependency.getY();
-
-        Log.d(TAG,"mCollapsedY "+mCollapsedY);
-        Log.d(TAG,"mAnchorPointY "+mAnchorPointY);
-        Log.d(TAG,"mPeekHeight "+mPeekHeight);
-        Log.d(TAG,"mCurrentChildY "+mCurrentChildY);
 
         //If the current child Y value is equal to the anchor point Y or really close
         // mean that the screen has been rotated while the bottom sheet was at anchor point
